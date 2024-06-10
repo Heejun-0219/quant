@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os, datetime, glob
+import plotly.graph_objects as go
 
 def mdd_fn(df):
     df = df[['Close']].copy()
@@ -70,8 +71,10 @@ def stockDataReader_fn(market, stockName, startDate = None, endDate = None):
         raise Exception('do not exist market data file')
     df = pd.read_csv(fileName)
     
-    if stockName in df['Name'].values:
+    if stockName in df['Name'].values: # Name || Symbol
         code = df[df['Name'] == stockName]['Code'].values[0]
+    elif stockName in df['Symbol'].values:
+        code = stockName
     else:
         print('do not exist stock name')
         raise Exception('do not exist market data code')
@@ -132,3 +135,8 @@ def todayMarketData():
             df = fdr.StockListing(market=market)
             print(fileName)
             df.to_csv(fileName)
+
+def plot_volume(df):
+    volume = go.Bar(x=df.index, y=df['Volume'], name='Volume')
+    fig = go.Figure(volume)
+    return fig
