@@ -82,6 +82,33 @@ def stockDataReader_fn(market, stockName, startDate = None, endDate = None):
     stockData = fdr.DataReader(code, start=startDate, end=endDate)
     return stockData
 
+def stockDataReader_fn(stockName, startDate = None, endDate = None):
+    markets = ['krx', 'kospi','kosdaq','konex', 'krx-marcap', 'krx-desc', 'kospi-desc', 'kosdaq-desc', 'konex-desc', 'krx-delisting', 'krx-administrative', 'krx-marcap', 'nasdaq', 'nyse', 'amex', 'sse', 'szse', 'hkex', 'tse', 'hose', 's&p500', 'etf/kr']
+    docPosition = "market_data/"
+    today = datetime.date.today()
+    
+    for market in markets:
+        marketName = market
+        if market.find('/'):
+            marketName = market.replace('/', '-')
+        fileName = docPosition + "{}-{}.csv".format(marketName, today)
+        if os.path.isfile(fileName) == False:
+            raise Exception('do not exist market data file')
+        df = pd.read_csv(fileName)
+        
+        # check df has column Name and Symbol
+        if 'Name' in df.columns and stockName in df['Name'].values: # Name || Symbol
+            code = df[df['Name'] == stockName]['Code'].values[0]
+        elif 'Symbol' in df.columns and stockName in df['Symbol'].values:
+            code = stockName
+            
+    if code == None:
+        print('do not exist stock name')
+        raise Exception('do not exist market data code')
+
+    stockData = fdr.DataReader(code, start=startDate, end=endDate)
+    return stockData
+
 def rsi_fn(df, rsi_period=14):
     df = df.copy()
     df['avgGain'] = df['Close'].diff()
